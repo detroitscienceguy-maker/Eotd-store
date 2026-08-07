@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Element of the Day | EOTD</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0A0A0A;font-family:'Space Grotesk',sans-serif;}
+    input::placeholder{color:#444;}
+    input:focus,select:focus{outline:none;border-color:#C8F135!important;}
+    input,select,button{font-family:'Space Grotesk',sans-serif;}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef,useMemo}=React;
+const LIME="#C8F135",BLACK="#0A0A0A",CARD="#141414",GRAY="#2A2A2A",MUTED="#888";
+const PAYPAL_CLIENT_ID="AQ66Eyq3XfKDvXXPlU3m2kiaBJvqiIjyW4lVATiG2mgUr2PERBoEvJ7Pa_poAxgIklRLjOGW_dx9OgTy";
+const SHIP=6.99,FREE_MIN=50,ADMIN_PIN="EOTD313";
+const SZ=["S","M","L","XL","2XL"];
+const CMAP={Black:"#111",Gray:"#555",White:"#E8E8E8"};
+
+const INV_DEFAULT=[
+  {id:1,element:"Iodine",symbol:"I",number:53,group:17,size:"L",color:"Gray",version:"Regular"},
+  {id:2,element:"Lithium",symbol:"Li",number:3,group:1,size:"L",color:"Gray",version:"Regular"},
+  {id:3,element:"Lithium",symbol:"Li",number:3,group:1,size:"L",color:"Gray",version:"Exclusive"},
+  {id:4,element:"Fluorine",symbol:"F",number:9,group:17,size:"L",color:"Gray",version:"Regular"},
+  {id:5,element:"Titanium",symbol:"Ti",number:22,group:4,size:"L",color:"White",version:"Regular"},
+  {id:6,element:"Phosphorus",symbol:"P",number:15,group:15,size:"L",color:"Gray",version:"Exclusive"},
+  {id:7,element:"Calcium",symbol:"Ca",number:20,group:2,size:"L",color:"Gray",version:"Regular"},
+  {id:8,element:"Titanium",symbol:"Ti",number:22,group:4,size:"L",color:"White",version:"Exclusive"},
+  {id:9,element:"Iodine",symbol:"I",number:53,group:17,size:"L",color:"Gray",version:"Regular"},
+  {id:10,element:"Beryllium",symbol:"Be",number:4,group:2,size:"L",color:"Gray",version:"Exclusive"},
+  {id:11,element:"Lithium",symbol:"Li",number:3,group:1,size:"M",color:"Black",version:"Exclusive"},
+  {id:12,element:"Tin",symbol:"Sn",number:50,group:14,size:"L",color:"White",version:"Regular"},
+  {id:13,element:"Aluminum",symbol:"Al",number:13,group:13,size:"L",color:"White",version:"Exclusive"},
+  {id:14,element:"Tungsten",symbol:"W",number:74,group:6,size:"L",color:"Black",version:"Exclusive"},
+  {id:15,element:"Tin",symbol:"Sn",number:50,group:14,size:"L",color:"Gray",version:"Regular"},
+  {id:16,element:"Titanium",symbol:"Ti",number:22,group:4,size:"XL",color:"Black",version:"Regular"},
+  {id:17,element:"Lithium",symbol:"Li",number:3,group:1,size:"M",color:"Black",version:"Regular"},
+  {id:18,element:"Sodium",symbol:"Na",number:11,group:1,size:"M",color:"Black",version:"Exclusive"},
+  {id:19,element:"Sodium",symbol:"Na",number:11,group:1,size:"S",color:"Black",version:"Regular"},
+  {id:20,element:"Titanium",symbol:"Ti",number:22,group:4,size:"L",color:"White",version:"Regular"},
+  {id:21,element:"Phosphorus",symbol:"P",number:15,group:15,size:"L",color:"Gray",version:"Exclusive"},
+  {id:22,element:"Calcium",symbol:"Ca",number:20,group:2,size:"L",color:"White",version:"Exclusive"},
+  {id:23,element:"Beryllium",symbol:"Be",number:4,group:2,size:"2XL",color:"Black",version:"Regular"},
+  {id:24,element:"Titanium",symbol:"Ti",number:22,group:4,size:"S",color:"Black",version:"Regular"},
+  {id:25,element:"Phosphorus",symbol:"P",number:15,group:15,size:"XL",color:"Black",version:"Regular"},
+  {id:26,element:"Phosphorus",symbol:"P",number:15,group:15,size:"XL",color:"Black",version:"Exclusive"},
+  {id:27,element:"Xenon",symbol:"Xe",number:54,group:18,size:"M",color:"Black",version:"Regular"},
+  {id:28,element:"Calcium",symbol:"Ca",number:20,group:2,size:"S",color:"Black",version:"Exclusive"},
+  {id:29,element:"Iodine",symbol:"I",number:53,group:17,size:"2XL",color:"Black",version:"Regular"},
+  {id:30,element:"Calcium",symbol:"Ca",number:20,group:2,size:"2XL",color:"Black",version:"Exclusive"},
+  {id:31,element:"Lithium",symbol:"Li",number:3,group:1,size:"XL",color:"Black",version:"Regular"},
+  {id:32,element:"Tungsten",symbol:"W",number:74,group:6,size:"2XL",color:"Black",version:"Regular"},
+];
+
+const EMETA=[
+  {element:"Aluminum",symbol:"Al",number:13,group:13},{element:"Beryllium",symbol:"Be",number:4,group:2},
+  {element:"Calcium",symbol:"Ca",number:20,group:2},{element:"Fluorine",symbol:"F",number:9,group:17},
+  {element:"Iodine",symbol:"I",number:53,group:17},{element:"Iron",symbol:"Fe",number:26,group:8},
+  {element:"Lithium",symbol:"Li",number:3,group:1},{element:"Mercury",symbol:"Hg",number:80,group:12},
+  {element:"Phosphorus",symbol:"P",number:15,group:15},{element:"Sodium",symbol:"Na",number:11,group:1},
+  {element:"Tin",symbol:"Sn",number:50,group:14},{element:"Titanium",symbol:"Ti",number:22,group:4},
+  {element:"Tungsten",symbol:"W",number:74,group:6},{element:"Xenon",symbol:"Xe",number:54,group:18},
+  {element:"Zirconium",symbol:"Zr",number:40,group:4},
+];
+
+const COMING=[
+  {element:"Zirconium",symbol:"Zr",number:40},
+  {element:"Mercury",symbol:"Hg",number:80},
+  {element:"Iron",symbol:"Fe",number:26},
+];
+
+const HERO_ELS=[
+  {name:"Zirconium",symbol:"Zr",number:40,group:4,version:"exclusive"},
+  {name:"Fluorine",symbol:"F",number:9,group:17,version:"regular"},
+  {name:"Tin",symbol:"Sn",number:50,group:14,version:"regular"},
+  {name:"Titanium",symbol:"Ti",number:22,group:4,version:"exclusive"},
+  {name:"Xenon",symbol:"Xe",number:54,group:18,version:"regular"},
+];
+
+const US_STATES=["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+
+function Logo({size=48}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="98" fill="#000"/>
+      <circle cx="100" cy="100" r="96" fill={LIME}/>
+      <circle cx="100" cy="100" r="62" fill="#FFF"/>
+      <circle cx="100" cy="100" r="62" fill="none" stroke="#000" strokeWidth="2"/>
+      <defs>
+        <path id="ta" d="M 18,100 A 82,82 0 0,1 182,100"/>
+        <path id="ba" d="M 30,118 A 75,75 0 0,0 170,118"/>
+      </defs>
+      <text fontSize="16.5" fontFamily="Georgia,serif" fontWeight="700" letterSpacing="5" fill="#000" textAnchor="middle">
+        <textPath href="#ta" startOffset="50%">ELEMENT OF THE DAY</textPath>
+      </text>
+      <text fontSize="13.5" fontFamily="Georgia,serif" fontWeight="600" letterSpacing="4" fill="#000" textAnchor="middle">
+        <textPath href="#ba" startOffset="50%">MADE IN DETROIT</textPath>
+      </text>
+      <text x="100" y="108" textAnchor="middle" fontSize="34" fontFamily="Georgia,serif" fontWeight="700" fill="#000" fontStyle="italic">EOTD</text>
+    </svg>
+  );
+}
+
+function Nav({setPage,cart}){
+  return(
+    <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid #1E1E1E",backgroundColor:"rgba(10,10,10,0.97)",position:"sticky",top:0,zIndex:200}}>
+      <div style={{display:"flex",alignItems:"center",gap:"10px",cursor:"pointer"}} onClick={()=>setPage("home")}>
+        <Logo size={44}/>
+        <div>
+          <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF"}}>Element of the Day</div>
+          <div style={{fontSize:"9px",color:MUTED,letterSpacing:"0.15em",textTransform:"uppercase"}}>Made in Detroit</div>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:"12px",alignItems:"center"}}>
+        <button onClick={()=>setPage("admin")} style={{backgroundColor:"transparent",color:MUTED,padding:"7px 12px",borderRadius:"6px",fontSize:"11px",fontWeight:"600",cursor:"pointer",border:"1px solid #2A2A2A"}}>⚙</button>
+        <button onClick={()=>setPage("checkout")} style={{backgroundColor:cart.length>0?LIME:"#1A1A1A",color:cart.length>0?BLACK:"#FFF",padding:"9px 16px",borderRadius:"6px",fontSize:"13px",fontWeight:"700",cursor:"pointer",border:"none"}}>
+          🛒{cart.length>0?` (${cart.length})`:""}
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+function buildProducts(inv){
+  const map={};
+  inv.forEach(i=>{
+    const k=`${i.element}__${i.version}`;
+    if(!map[k]) map[k]={element:i.element,symbol:i.symbol,number:i.number,group:i.group,version:i.version,items:[]};
+    map[k].items.push(i);
+  });
+  return Object.values(map).sort((a,b)=>a.element.localeCompare(b.element));
+}
+
+const price=v=>v==="Exclusive"?"$21.00":"$16.00";
+const stockColor=n=>n===1?"#FF6B6B":n<=2?"#FFB347":"#6BCB77";
+
+function HomePage({setPage,inventory}){
+  const[cur,setCur]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setCur(p=>(p+1)%HERO_ELS.length),2500);return()=>clearInterval(t);},[]);
+  const feat=HERO_ELS[cur];
+  const preview=useMemo(()=>{const m={};inventory.slice(0,6).forEach(i=>{const k=`${i.element}__${i.version}`;if(!m[k])m[k]=i;});return Object.values(m).slice(0,6);},[inventory]);
+  const btn=(bg,col,cb)=><button onClick={cb} style={{backgroundColor:bg,color:col,border:bg==="transparent"?"1px solid #444":"none",padding:"13px 24px",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer"}}>;
+
+  return(
+    <div style={{backgroundColor:BLACK,minHeight:"100vh",color:"#FFF"}}>
+      <div style={{padding:"48px 24px 40px",maxWidth:"900px",margin:"0 auto"}}>
+        <div style={{display:"flex",flexDirection:"column",gap:"32px",alignItems:"center",textAlign:"center"}}>
+          <Logo size={100}/>
+          <div>
+            <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"0.2em",textTransform:"uppercase",color:LIME,marginBottom:"12px"}}>Made in Detroit · Science Apparel</div>
+            <h1 style={{fontSize:"52px",fontWeight:"900",lineHeight:"1",color:"#FFF",marginBottom:"8px"}}>Wear the<br/><span style={{color:LIME,fontStyle:"italic"}}>Element.</span></h1>
+            <p style={{fontSize:"15px",color:"#999",lineHeight:"1.7",marginBottom:"28px",maxWidth:"420px",margin:"0 auto 28px"}}>Every shirt tells the story of a different chemical element — hand-designed, Detroit-made collectibles for science lovers.</p>
+            <div style={{display:"flex",gap:"12px",justifyContent:"center"}}>
+              <button onClick={()=>setPage("shop")} style={{backgroundColor:LIME,color:BLACK,border:"none",padding:"13px 24px",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer"}}>Shop All Elements</button>
+              <button onClick={()=>setPage("shop")} style={{backgroundColor:"transparent",color:"#CCC",border:"1px solid #444",padding:"13px 24px",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer"}}>View Collections</button>
+            </div>
+          </div>
+          <div style={{backgroundColor:CARD,border:`2px solid ${LIME}`,borderRadius:"16px",padding:"28px 40px",textAlign:"center",boxShadow:`0 0 40px rgba(200,241,53,0.15)`,position:"relative"}}>
+            {feat.version==="exclusive"&&<span style={{position:"absolute",top:"-12px",right:"16px",backgroundColor:LIME,color:BLACK,fontSize:"10px",fontWeight:"800",padding:"4px 10px",borderRadius:"20px",textTransform:"uppercase"}}>Exclusive</span>}
+            <div style={{fontSize:"13px",color:MUTED}}>#{feat.number}</div>
+            <div style={{fontSize:"72px",fontWeight:"900",color:LIME,lineHeight:"1",margin:"6px 0"}}>{feat.symbol}</div>
+            <div style={{fontSize:"18px",fontWeight:"700",color:"#FFF"}}>{feat.name}</div>
+            <div style={{fontSize:"12px",color:MUTED,marginTop:"4px"}}>Group {feat.group}</div>
+            <div style={{fontSize:"20px",fontWeight:"800",color:LIME,marginTop:"12px"}}>{feat.version==="exclusive"?"$21.00":"$16.00"}</div>
+          </div>
+        </div>
+
+        <div style={{height:"1px",backgroundColor:"#1E1E1E",margin:"48px 0 40px"}}/>
+
+        <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"0.2em",textTransform:"uppercase",color:LIME,marginBottom:"8px"}}>The Collection</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"24px"}}>
+          <h2 style={{fontSize:"28px",fontWeight:"800",color:"#FFF"}}>Featured Elements</h2>
+          <button onClick={()=>setPage("shop")} style={{backgroundColor:"transparent",color:"#CCC",border:"1px solid #333",padding:"8px 16px",borderRadius:"6px",fontSize:"12px",fontWeight:"600",cursor:"pointer"}}>View All →</button>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px"}}>
+          {preview.map((item,i)=>(
+            <div key={i} onClick={()=>setPage("shop")} style={{backgroundColor:CARD,borderRadius:"12px",overflow:"hidden",border:"1px solid #222",cursor:"pointer"}}>
+              <div style={{height:"130px",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#1A1A1A,#111)",borderBottom:"1px solid #222"}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:"10px",color:MUTED}}>#{item.number}</div>
+                  <div style={{fontSize:"40px",fontWeight:"900",color:LIME,lineHeight:"1"}}>{item.symbol}</div>
+                  <div style={{fontSize:"11px",color:"#777"}}>{item.element}</div>
+                </div>
+              </div>
+              <div style={{padding:"12px 14px"}}>
+                <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF",marginBottom:"6px"}}>{item.element}</div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <span style={{fontSize:"16px",fontWeight:"900",color:LIME}}>{price(item.version)}</span>
+                  <span style={{fontSize:"10px",fontWeight:"700",padding:"2px 7px",borderRadius:"4px",backgroundColor:item.version==="Exclusive"?LIME:GRAY,color:item.version==="Exclusive"?BLACK:"#CCC",textTransform:"uppercase"}}>{item.version}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{height:"1px",backgroundColor:"#1E1E1E",margin:"48px 0 40px"}}/>
+        <div style={{backgroundColor:"#0E0E0E",borderRadius:"16px",padding:"32px 24px",border:"1px solid #1E1E1E",textAlign:"center"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:"8px",backgroundColor:GRAY,padding:"7px 14px",borderRadius:"6px",fontSize:"12px",fontWeight:"600",color:"#CCC",marginBottom:"20px"}}>
+            <span style={{color:LIME}}>⬡</span> Made in Detroit, Michigan
+          </div>
+          <h2 style={{fontSize:"30px",fontWeight:"800",color:"#FFF",marginBottom:"14px"}}>Science you can actually wear.</h2>
+          <p style={{fontSize:"14px",color:"#999",lineHeight:"1.8",marginBottom:"20px"}}>Element of the Day started with one idea: make science tangible, wearable, and collectible. Each shirt features a unique hand-designed element card on the back — real facts, real science, real Detroit craftsmanship.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"12px",marginBottom:"24px"}}>
+            {[{n:"15",l:"Elements Available"},{n:"2",l:"Collections"},{n:"313",l:"Detroit Area Code"},{n:"118",l:"Elements to Go"}].map(s=>(
+              <div key={s.l} style={{backgroundColor:CARD,borderRadius:"10px",padding:"18px",border:"1px solid #222"}}>
+                <div style={{fontSize:"28px",fontWeight:"900",color:LIME,lineHeight:"1"}}>{s.n}</div>
+                <div style={{fontSize:"11px",color:MUTED,marginTop:"4px"}}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+          <button onClick={()=>setPage("shop")} style={{backgroundColor:LIME,color:BLACK,border:"none",padding:"13px 28px",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer"}}>Shop Now</button>
+        </div>
+
+        <div style={{padding:"32px 0 16px",display:"flex",flexDirection:"column",alignItems:"center",gap:"12px",borderTop:"1px solid #1E1E1E",marginTop:"40px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"10px"}}><Logo size={32}/><span style={{fontSize:"14px",fontWeight:"800",color:"#FFF"}}>Element of the Day</span></div>
+          <div style={{fontSize:"11px",color:"#444"}}>© 2025 EOTD · Detroit, MI · elementoftheday.store</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShopPage({setPage,inventory,cart,setCart}){
+  const[fv,setFv]=useState("All"),[fs,setFs]=useState("All"),[fc,setFc]=useState("All");
+  const[sel,setSel]=useState(null),[selSz,setSelSz]=useState(null),[selCol,setSelCol]=useState(null),[added,setAdded]=useState(false);
+  const products=useMemo(()=>buildProducts(inventory),[inventory]);
+  const allSizes=useMemo(()=>{let it=inventory;if(fc!=="All")it=it.filter(i=>i.color===fc);if(fv!=="All")it=it.filter(i=>i.version===fv);return SZ.filter(s=>it.some(i=>i.size===s));},[inventory,fc,fv]);
+  const allColors=useMemo(()=>{let it=inventory;if(fs!=="All")it=it.filter(i=>i.size===fs);if(fv!=="All")it=it.filter(i=>i.version===fv);return["Black","Gray","White"].filter(c=>it.some(i=>i.color===c));},[inventory,fs,fv]);
+  const filtered=useMemo(()=>products.filter(p=>(fv==="All"||p.version===fv)&&(fs==="All"||p.items.some(i=>i.size===fs))&&(fc==="All"||p.items.some(i=>i.color===fc))),[products,fv,fs,fc]);
+  const getMatch=p=>{if(!selSz||!selCol||!p)return null;return p.items.find(i=>i.size===selSz&&i.color===selCol)||null;};
+  const addToCart=p=>{const item=getMatch(p);if(!item)return;setCart(prev=>[...prev,{...item,element:p.element,symbol:p.symbol,price:p.version==="Exclusive"?21:16}]);setAdded(true);setTimeout(()=>setAdded(false),2000);};
+  const fb=(active,disabled)=>({padding:"6px 12px",borderRadius:"20px",fontSize:"12px",fontWeight:"600",cursor:disabled?"default":"pointer",border:active?"none":"1px solid #2A2A2A",backgroundColor:active?LIME:disabled?"#0D0D0D":"transparent",color:active?BLACK:disabled?"#333":"#BBB"});
+  const optBtn=(s,a)=>({padding:"8px 12px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",cursor:a?"pointer":"default",border:s?`2px solid ${LIME}`:"1px solid #333",backgroundColor:s?"rgba(200,241,53,0.1)":a?"#1E1E1E":"#0D0D0D",color:s?LIME:a?"#CCC":"#333"});
+
+  return(
+    <div style={{backgroundColor:BLACK,minHeight:"100vh",color:"#FFF"}}>
+      <div style={{padding:"32px 24px 16px"}}>
+        <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"0.2em",textTransform:"uppercase",color:LIME,marginBottom:"6px"}}>The Collection</div>
+        <h1 style={{fontSize:"30px",fontWeight:"900",color:"#FFF",marginBottom:"4px"}}>Shop All Elements</h1>
+        <p style={{fontSize:"13px",color:MUTED}}>{filtered.length} products · {inventory.length} units in stock</p>
+      </div>
+      <div style={{padding:"8px 24px 20px",display:"flex",flexDirection:"column",gap:"10px"}}>
+        {[{label:"Version",opts:["All","Regular","Exclusive"],val:fv,set:setFv,avail:["All","Regular","Exclusive"]},
+          {label:"Size",opts:["All",...SZ],val:fs,set:setFs,avail:["All",...allSizes]},
+          {label:"Color",opts:["All","Black","Gray","White"],val:fc,set:setFc,avail:["All",...allColors]}
+        ].map(({label,opts,val,set,avail})=>(
+          <div key={label} style={{display:"flex",gap:"6px",alignItems:"center",flexWrap:"wrap"}}>
+            <span style={{fontSize:"11px",fontWeight:"700",color:MUTED,minWidth:"48px",textTransform:"uppercase"}}>{label}</span>
+            {opts.map(o=><button key={o} style={fb(val===o,!avail.includes(o)&&val!==o)} onClick={()=>avail.includes(o)?set(o):val===o&&set("All")}>{o}</button>)}
+          </div>
+        ))}
+        {(fv!=="All"||fs!=="All"||fc!=="All")&&<button onClick={()=>{setFv("All");setFs("All");setFc("All");}} style={{background:"none",border:"none",color:MUTED,fontSize:"12px",cursor:"pointer",textDecoration:"underline",alignSelf:"flex-start"}}>Reset filters</button>}
+      </div>
+      <div style={{height:"1px",backgroundColor:"#1E1E1E",margin:"0 24px 24px"}}/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px",padding:"0 24px 48px"}}>
+        {filtered.map(product=>{
+          const stock=product.items.length;
+          const sizes=[...new Set(product.items.map(i=>i.size))].sort((a,b)=>SZ.indexOf(a)-SZ.indexOf(b));
+          const colors=[...new Set(product.items.map(i=>i.color))];
+          return(
+            <div key={`${product.element}-${product.version}`} onClick={()=>{setSel(product);setSelSz(null);setSelCol(null);setAdded(false);}} style={{backgroundColor:CARD,borderRadius:"12px",overflow:"hidden",border:"1px solid #222",cursor:"pointer"}}>
+              <div style={{height:"130px",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#1A1A1A,#111)",borderBottom:"1px solid #222"}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:"10px",color:MUTED}}>#{product.number}</div>
+                  <div style={{fontSize:"40px",fontWeight:"900",color:LIME,lineHeight:"1"}}>{product.symbol}</div>
+                  <div style={{fontSize:"10px",color:"#777"}}>{product.element}</div>
+                </div>
+              </div>
+              <div style={{padding:"12px 14px"}}>
+                <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF",marginBottom:"2px"}}>{product.element}</div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"6px"}}>
+                  <span style={{fontSize:"16px",fontWeight:"900",color:LIME}}>{price(product.version)}</span>
+                  <span style={{fontSize:"10px",fontWeight:"700",padding:"2px 6px",borderRadius:"4px",backgroundColor:product.version==="Exclusive"?LIME:GRAY,color:product.version==="Exclusive"?BLACK:"#CCC",textTransform:"uppercase"}}>{product.version}</span>
+                </div>
+                <div style={{display:"flex",gap:"4px",flexWrap:"wrap",marginBottom:"6px"}}>
+                  {sizes.map(s=><span key={s} style={{fontSize:"9px",fontWeight:"600",color:"#999",backgroundColor:"#1E1E1E",padding:"2px 6px",borderRadius:"4px"}}>{s}</span>)}
+                </div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",gap:"4px"}}>{colors.map(c=><span key={c} style={{width:"10px",height:"10px",borderRadius:"50%",backgroundColor:CMAP[c],border:c==="White"?"1px solid #555":"none",display:"inline-block"}}/>)}</div>
+                  <span style={{fontSize:"10px",fontWeight:"700",color:stockColor(stock)}}>{stock===1?"⚠ Last one":stock<=2?`⚠ ${stock} left`:`${stock} in stock`}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{padding:"0 24px 48px"}}>
+        <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"0.2em",textTransform:"uppercase",color:MUTED,marginBottom:"8px"}}>Coming Soon</div>
+        <h2 style={{fontSize:"22px",fontWeight:"800",color:"#FFF",marginBottom:"16px"}}>More Elements Dropping</h2>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px"}}>
+          {COMING.map(el=>(
+            <div key={el.element} style={{backgroundColor:"#0D0D0D",borderRadius:"10px",padding:"16px",border:"1px solid #1A1A1A",textAlign:"center",opacity:0.55}}>
+              <div style={{fontSize:"28px",fontWeight:"900",color:"#3A3A3A",lineHeight:"1",marginBottom:"4px"}}>{el.symbol}</div>
+              <div style={{fontSize:"12px",color:"#444",fontWeight:"600"}}>{el.element}</div>
+              <div style={{fontSize:"9px",color:"#333",textTransform:"uppercase",marginTop:"4px"}}>Coming Soon</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {sel&&(
+        <div style={{position:"fixed",inset:0,backgroundColor:"rgba(0,0,0,0.88)",zIndex:300,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"0"}} onClick={()=>setSel(null)}>
+          <div style={{backgroundColor:"#161616",borderRadius:"20px 20px 0 0",border:"1px solid #2A2A2A",width:"100%",maxWidth:"500px",overflow:"hidden"}} onClick={e=>e.stopPropagation()}>
+            <div style={{background:"linear-gradient(135deg,#1A1A1A,#111)",padding:"28px 24px",textAlign:"center",borderBottom:"1px solid #222",position:"relative"}}>
+              <button onClick={()=>setSel(null)} style={{position:"absolute",top:"14px",right:"14px",backgroundColor:"#2A2A2A",border:"none",color:"#FFF",width:"30px",height:"30px",borderRadius:"50%",cursor:"pointer",fontSize:"14px"}}>✕</button>
+              <div style={{fontSize:"64px",fontWeight:"900",color:LIME,lineHeight:"1"}}>{sel.symbol}</div>
+              <div style={{fontSize:"20px",fontWeight:"800",color:"#FFF",marginTop:"4px"}}>{sel.element}</div>
+              <div style={{fontSize:"11px",color:MUTED}}>#{sel.number} · Group {sel.group}</div>
+            </div>
+            <div style={{padding:"20px 24px"}}>
+              <div style={{fontSize:"26px",fontWeight:"900",color:LIME}}>{price(sel.version)}</div>
+              <div style={{fontSize:"11px",color:MUTED,marginBottom:"16px"}}>+ flat rate shipping · {sel.version} Edition</div>
+              {[{label:"Size",opts:SZ,sv:selSz,ss:setSelSz,avail:s=>sel.items.some(i=>i.size===s)},
+                {label:"Color",opts:["Black","Gray","White"],sv:selCol,ss:setSelCol,avail:c=>sel.items.some(i=>i.color===c&&(!selSz||i.size===selSz))}
+              ].map(({label,opts,sv,ss,avail})=>(
+                <div key={label} style={{marginBottom:"16px"}}>
+                  <div style={{fontSize:"10px",fontWeight:"700",letterSpacing:"0.15em",textTransform:"uppercase",color:MUTED,marginBottom:"8px"}}>{label}</div>
+                  <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                    {opts.map(o=>{const a=avail(o);return<button key={o} style={optBtn(sv===o,a)} onClick={()=>a&&ss(o)}>{o}</button>;})}
+                  </div>
+                </div>
+              ))}
+              <button style={{width:"100%",padding:"14px",borderRadius:"10px",fontSize:"14px",fontWeight:"800",textTransform:"uppercase",cursor:getMatch(sel)?"pointer":"default",border:"none",backgroundColor:getMatch(sel)?LIME:"#222",color:getMatch(sel)?BLACK:"#555"}} onClick={()=>getMatch(sel)&&addToCart(sel)}>
+                {selSz&&selCol?(getMatch(sel)?"Add to Cart":"Not Available"):"Select Size & Color"}
+              </button>
+              {added&&<div style={{textAlign:"center",color:LIME,fontSize:"13px",fontWeight:"700",marginTop:"10px"}}>✓ Added to cart!</div>}
+              {added&&<button style={{width:"100%",marginTop:"10px",padding:"12px",borderRadius:"8px",fontSize:"13px",fontWeight:"700",cursor:"pointer",border:`1px solid ${LIME}`,backgroundColor:"transparent",color:LIME}} onClick={()=>setPage("checkout")}>View Cart & Checkout →</button>}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CheckoutPage({setPage,cart,setCart}){
+  const[step,setStep]=useState("info");
+  const[ppLoaded,setPpLoaded]=useState(false);
+  const[ppErr,setPpErr]=useState(false);
+  const[orderID,setOrderID]=useState("");
+  const[formErr,setFormErr]=useState("");
+  const ppRef=useRef(null);
+  const ppDone=useRef(false);
+  const[form,setForm]=useState({firstName:"",lastName:"",email:"",address1:"",address2:"",city:"",state:"",zip:""});
+  const subtotal=useMemo(()=>cart.reduce((s,i)=>s+i.price,0),[cart]);
+  const shipping=subtotal>=FREE_MIN?0:SHIP;
+  const total=subtotal+shipping;
+  const inp=(k,v)=>setForm(p=>({...p,[k]:v}));
+
+  useEffect(()=>{
+    if(document.getElementById("pp-sdk")){setPpLoaded(true);return;}
+    const s=document.createElement("script");
+    s.id="pp-sdk";
+    s.src=`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
+    s.async=true;
+    s.onload=()=>setPpLoaded(true);
+    s.onerror=()=>setPpErr(true);
+    document.head.appendChild(s);
+  },[]);
+
+  useEffect(()=>{
+    if(step!=="review"||!ppLoaded||!ppRef.current||ppDone.current)return;
+    if(!window.paypal)return;
+    ppDone.current=true;
+    window.paypal.Buttons({
+      style:{layout:"vertical",color:"gold",shape:"rect",label:"pay",height:48},
+      createOrder:(d,a)=>a.order.create({purchase_units:[{description:`EOTD Shirts`,amount:{currency_code:"USD",value:total.toFixed(2),breakdown:{item_total:{currency_code:"USD",value:subtotal.toFixed(2)},shipping:{currency_code:"USD",value:shipping.toFixed(2)}}},items:cart.map(i=>({name:`${i.element} EOTD Tee – ${i.version}`,unit_amount:{currency_code:"USD",value:i.price.toFixed(2)},quantity:"1",category:"PHYSICAL_GOODS"})),shipping:{name:{full_name:`${form.firstName} ${form.lastName}`},address:{address_line_1:form.address1,admin_area_2:form.city,admin_area_1:form.state,postal_code:form.zip,country_code:"US"}}}]}),
+      onApprove:(d,a)=>a.order.capture().then(det=>{setOrderID(det.id||d.orderID);setCart([]);setStep("confirm");}),
+      onError:()=>setPpErr(true),
+    }).render(ppRef.current);
+  },[step,ppLoaded]);
+
+  function submit(){
+    const req=["firstName","lastName","email","address1","city","state","zip"];
+    if(req.some(k=>!form[k].trim())){setFormErr("Please fill in all required fields.");return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)){setFormErr("Enter a valid email.");return;}
+    if(!/^\d{5}/.test(form.zip)){setFormErr("Enter a valid ZIP code.");return;}
+    setFormErr("");ppDone.current=false;setStep("review");
+  }
+
+  const fld=(label,key,ph,type="text")=>(
+    <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+      <label style={{fontSize:"10px",fontWeight:"700",color:MUTED,letterSpacing:"0.1em",textTransform:"uppercase"}}>{label}</label>
+      <input type={type} placeholder={ph} value={form[key]} onChange={e=>inp(key,e.target.value)} style={{backgroundColor:"#1A1A1A",border:"1px solid #2A2A2A",color:"#FFF",padding:"11px 12px",borderRadius:"8px",fontSize:"14px"}}/>
+    </div>
+  );
+
+  if(cart.length===0&&step!=="confirm")return(
+    <div style={{backgroundColor:BLACK,minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#FFF",gap:"16px",padding:"40px"}}>
+      <Logo size={60}/><h2 style={{fontSize:"22px",fontWeight:"800"}}>Your cart is empty</h2>
+      <p style={{color:MUTED,fontSize:"14px",textAlign:"center"}}>Add some elements from the shop first.</p>
+      <button style={{backgroundColor:LIME,color:BLACK,border:"none",padding:"13px 28px",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer"}} onClick={()=>setPage("shop")}>Back to Shop</button>
+    </div>
+  );
+
+  if(step==="confirm")return(
+    <div style={{backgroundColor:BLACK,minHeight:"100vh",color:"#FFF",padding:"40px 24px",textAlign:"center"}}>
+      <Logo size={64}/>
+      <div style={{fontSize:"48px",margin:"16px 0"}}>⚗️</div>
+      <h1 style={{fontSize:"28px",fontWeight:"900",marginBottom:"8px"}}>Order Placed!</h1>
+      <p style={{fontSize:"14px",color:MUTED,lineHeight:"1.7",marginBottom:"24px"}}>Thanks, {form.firstName}! Your EOTD shirts will ship to {form.city}, {form.state} within 2–3 business days.</p>
+      {orderID&&<div style={{backgroundColor:CARD,border:`1px solid ${LIME}`,borderRadius:"10px",padding:"14px 20px",display:"inline-block",marginBottom:"24px"}}>
+        <div style={{fontSize:"10px",color:MUTED,textTransform:"uppercase",marginBottom:"4px"}}>Order Reference</div>
+        <div style={{fontSize:"15px",fontWeight:"800",color:LIME}}>{orderID}</div>
+      </div>}
+      <div style={{backgroundColor:CARD,borderRadius:"12px",border:"1px solid #222",padding:"20px",textAlign:"left",marginBottom:"20px"}}>
+        {[{n:"1",t:"Confirmation email",b:`Sent to ${form.email}.`},{n:"2",t:"Packed & shipped",b:"Within 2–3 business days."},{n:"3",t:"Tracking sent",b:"USPS tracking number by email."},{n:"4",t:"Delivery",b:"USPS First Class · 3–5 days."}].map(s=>(
+          <div key={s.n} style={{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"12px"}}>
+            <div style={{width:"24px",height:"24px",borderRadius:"50%",backgroundColor:LIME,color:BLACK,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"12px",fontWeight:"900",flexShrink:0}}>{s.n}</div>
+            <div style={{fontSize:"13px",color:"#CCC",lineHeight:"1.6"}}><strong style={{color:"#FFF"}}>{s.t} — </strong>{s.b}</div>
+          </div>
+        ))}
+      </div>
+      <button style={{backgroundColor:LIME,color:BLACK,border:"none",padding:"13px 28px",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer",width:"100%"}} onClick={()=>setPage("shop")}>Back to Shop</button>
+    </div>
+  );
+
+  const steps=[{l:"Info",k:"info"},{l:"Review",k:"review"},{l:"Confirm",k:"confirm"}];
+  const si=steps.findIndex(s=>s.key===step);
+
+  return(
+    <div style={{backgroundColor:BLACK,minHeight:"100vh",color:"#FFF"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0",padding:"20px 0 24px",borderBottom:"1px solid #1A1A1A"}}>
+        {steps.map((ps,i)=>{const done=si>i,active=si===i;return(
+          <div key={ps.k} style={{display:"flex",alignItems:"center"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"6px",opacity:done||active?1:0.35}}>
+              <div style={{width:"26px",height:"26px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:"800",backgroundColor:done?LIME:active?"#2A2A2A":"transparent",color:done?BLACK:active?LIME:MUTED,border:`2px solid ${done?LIME:active?LIME:"#2A2A2A"}`}}>{done?"✓":i+1}</div>
+              <span style={{fontSize:"11px",fontWeight:active||done?"700":"400",color:active?LIME:done?"#FFF":MUTED,textTransform:"uppercase"}}>{ps.l}</span>
+            </div>
+            {i<2&&<div style={{width:"32px",height:"1px",backgroundColor:"#2A2A2A",margin:"0 4px"}}/>}
+          </div>
+        );})}
+      </div>
+      <div style={{padding:"24px",maxWidth:"500px",margin:"0 auto"}}>
+        <div style={{backgroundColor:CARD,borderRadius:"12px",border:"1px solid #222",padding:"20px",marginBottom:"16px"}}>
+          <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF",marginBottom:"14px",paddingBottom:"10px",borderBottom:"1px solid #1A1A1A"}}>Order ({cart.length} item{cart.length!==1?"s":""})</div>
+          {cart.map((item,i)=>(
+            <div key={i} style={{display:"flex",gap:"10px",alignItems:"flex-start",paddingBottom:"12px",marginBottom:"12px",borderBottom:"1px solid #1A1A1A"}}>
+              <div style={{backgroundColor:"#1A1A1A",borderRadius:"6px",width:"44px",height:"52px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",border:"1px solid #2A2A2A",flexShrink:0}}>
+                <div style={{fontSize:"9px",color:MUTED}}>{item.number}</div>
+                <div style={{fontSize:"18px",fontWeight:"900",color:LIME,lineHeight:"1"}}>{item.symbol}</div>
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF"}}>{item.element} Tee</div>
+                <div style={{fontSize:"11px",color:MUTED}}>{item.color} · Size {item.size}</div>
+                <span style={{fontSize:"9px",fontWeight:"700",textTransform:"uppercase",padding:"2px 6px",borderRadius:"4px",backgroundColor:item.version==="Exclusive"?LIME:"#2A2A2A",color:item.version==="Exclusive"?BLACK:"#CCC",marginTop:"4px",display:"inline-block"}}>{item.version}</span>
+              </div>
+              <div style={{fontSize:"15px",fontWeight:"800",color:LIME}}>${item.price.toFixed(2)}</div>
+            </div>
+          ))}
+          <div style={{height:"1px",backgroundColor:"#1E1E1E",margin:"4px 0 12px"}}/>
+          {[{l:"Subtotal",v:`$${subtotal.toFixed(2)}`},{l:"Shipping",v:shipping===0?"FREE":`$${shipping.toFixed(2)}`,g:shipping===0}].map(r=>(
+            <div key={r.l} style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}>
+              <span style={{fontSize:"12px",color:MUTED}}>{r.l}</span>
+              <span style={{fontSize:"12px",color:r.g?"#6BCB77":"#CCC",fontWeight:"600"}}>{r.v}</span>
+            </div>
+          ))}
+          <div style={{height:"1px",backgroundColor:"#1E1E1E",margin:"8px 0"}}/>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:"15px",fontWeight:"800",color:"#FFF"}}>Total</span>
+            <span style={{fontSize:"20px",fontWeight:"900",color:LIME}}>${total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {step==="info"&&(
+          <div style={{backgroundColor:CARD,borderRadius:"12px",border:"1px solid #222",padding:"20px"}}>
+            <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF",marginBottom:"16px"}}>Shipping Information</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>{fld("First Name *","firstName","John")}{fld("Last Name *","lastName","Doe")}</div>
+              {fld("Email *","email","john@example.com","email")}
+              {fld("Street Address *","address1","123 Main St")}
+              {fld("Apt/Suite","address2","Apt 4B")}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
+                {fld("City *","city","Detroit")}
+                <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+                  <label style={{fontSize:"10px",fontWeight:"700",color:MUTED,letterSpacing:"0.1em",textTransform:"uppercase"}}>State *</label>
+                  <select value={form.state} onChange={e=>inp("state",e.target.value)} style={{backgroundColor:"#1A1A1A",border:"1px solid #2A2A2A",color:form.state?"#FFF":MUTED,padding:"11px 10px",borderRadius:"8px",fontSize:"14px"}}>
+                    <option value="">State</option>
+                    {US_STATES.map(s=><option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              {fld("ZIP Code *","zip","48201")}
+              {formErr&&<div style={{color:"#FF6B6B",fontSize:"12px",fontWeight:"600"}}>⚠ {formErr}</div>}
+              <button style={{backgroundColor:LIME,color:BLACK,border:"none",padding:"14px",borderRadius:"10px",fontSize:"14px",fontWeight:"800",cursor:"pointer",width:"100%"}} onClick={submit}>Continue to Review →</button>
+            </div>
+          </div>
+        )}
+
+        {step==="review"&&(
+          <>
+            <div style={{backgroundColor:CARD,borderRadius:"12px",border:"1px solid #222",padding:"16px 20px",marginBottom:"14px"}}>
+              <div style={{fontSize:"13px",fontWeight:"800",color:"#FFF",marginBottom:"8px"}}>Shipping To</div>
+              <div style={{fontSize:"13px",color:"#CCC",lineHeight:"1.8"}}><strong style={{color:"#FFF"}}>{form.firstName} {form.lastName}</strong><br/>{form.address1}<br/>{form.city}, {form.state} {form.zip}<br/><span style={{color:MUTED}}>{form.email}</span></div>
+              <button onClick={()=>{setStep("info");ppDone.current=false;}} style={{marginTop:"10px",backgroundColor:"transparent",border:"1px solid #333",color:MUTED,padding:"6px 12px",borderRadius:"6px",fontSize:"11px",cursor:"pointer"}}>← Edit</button>
+            </div>
+            <div style={{backgroundColor:CARD,borderRadius:"12px",border:"1px solid #222",padding:"20px"}}>
+              <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF",marginBottom:"8px"}}>Complete Payment</div>
+              <p style={{fontSize:"12px",color:MUTED,marginBottom:"16px",lineHeight:"1.6"}}>You'll be charged <strong style={{color:"#FFF"}}>${total.toFixed(2)}</strong> including {shipping===0?"free shipping":`$${shipping.toFixed(2)} shipping`}.</p>
+              {ppErr?<div style={{backgroundColor:"#1A0A0A",border:"1px solid #3A1A1A",borderRadius:"8px",padding:"14px",color:"#FF6B6B",fontSize:"13px"}}>PayPal failed to load. Please refresh and try again.</div>
+              :!ppLoaded?<div style={{textAlign:"center",color:MUTED,padding:"20px",fontSize:"13px"}}>Loading PayPal...</div>
+              :<div ref={ppRef}/>}
+              <p style={{fontSize:"10px",color:MUTED,textAlign:"center",marginTop:"10px",lineHeight:"1.6"}}>Payments processed securely by PayPal. EOTD never stores your card info.</p>
+            </div>
+            <div style={{marginTop:"12px",backgroundColor:"#0E0E0E",borderRadius:"8px",padding:"12px",border:"1px solid #1A1A1A"}}>
+              <div style={{fontSize:"11px",color:MUTED,lineHeight:"1.9"}}>
+                <div>📦 Ships within <strong style={{color:"#CCC"}}>2–3 business days</strong></div>
+                <div>🚚 USPS First Class · <strong style={{color:"#CCC"}}>3–5 day delivery</strong></div>
+                <div>📍 Ships from <strong style={{color:"#CCC"}}>Detroit, MI</strong></div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AdminPage({setPage,inventory,setInventory}){
+  const[unlocked,setUnlocked]=useState(false),[pin,setPin]=useState(""),[pinErr,setPinErr]=useState(false);
+  const[tab,setTab]=useState("inventory"),[newItem,setNewItem]=useState({element:"",size:"L",color:"Black",version:"Regular"}),[saveMsg,setSaveMsg]=useState("");
+
+  function saveInv(inv){setInventory(inv);try{localStorage.setItem("eotd-inventory",JSON.stringify(inv));setSaveMsg("✓ Saved");setTimeout(()=>setSaveMsg(""),2000);}catch(e){setSaveMsg("Save failed");}}
+  function login(){if(pin===ADMIN_PIN){setUnlocked(true);setPinErr(false);}else setPinErr(true);}
+  function removeItem(id){saveInv(inventory.filter(i=>i.id!==id));}
+  function addItem(){if(!newItem.element)return;const meta=EMETA.find(m=>m.element===newItem.element);const maxId=Math.max(...inventory.map(i=>i.id),0);saveInv([...inventory,{id:maxId+1,...meta,...newItem}]);setNewItem({element:"",size:"L",color:"Black",version:"Regular"});}
+  const groups=useMemo(()=>{const m={};inventory.forEach(i=>{if(!m[i.element])m[i.element]=[];m[i.element].push(i);});return Object.entries(m).sort((a,b)=>a[0].localeCompare(b[0]));},[inventory]);
+  const sel={backgroundColor:"#1A1A1A",border:"1px solid #2A2A2A",color:"#FFF",padding:"10px 10px",borderRadius:"8px",fontSize:"13px",width:"100%"};
+
+  if(!unlocked)return(
+    <div style={{backgroundColor:BLACK,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:"24px"}}>
+      <div style={{backgroundColor:"#111",borderRadius:"16px",border:"1px solid #1E1E1E",padding:"32px",width:"100%",maxWidth:"300px",textAlign:"center"}}>
+        <Logo size={56}/>
+        <div style={{fontSize:"18px",fontWeight:"900",color:"#FFF",marginTop:"14px",marginBottom:"6px"}}>Admin Panel</div>
+        <div style={{fontSize:"12px",color:MUTED,marginBottom:"20px"}}>Enter your PIN to continue</div>
+        <input type="password" placeholder="Enter PIN" value={pin} onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()} style={{width:"100%",backgroundColor:"#1A1A1A",border:"1px solid #2A2A2A",color:"#FFF",padding:"12px",borderRadius:"8px",fontSize:"14px",textAlign:"center",letterSpacing:"0.2em",marginBottom:"10px"}}/>
+        <button onClick={login} style={{width:"100%",backgroundColor:LIME,color:BLACK,border:"none",padding:"12px",borderRadius:"8px",fontSize:"14px",fontWeight:"800",cursor:"pointer",marginBottom:"10px"}}>Unlock →</button>
+        {pinErr&&<div style={{color:"#FF6B6B",fontSize:"12px",marginBottom:"10px"}}>Incorrect PIN.</div>}
+        <button onClick={()=>setPage("shop")} style={{width:"100%",backgroundColor:"transparent",border:"1px solid #333",color:MUTED,padding:"10px",borderRadius:"8px",fontSize:"13px",cursor:"pointer"}}>← Back to Shop</button>
+      </div>
+    </div>
+  );
+
+  return(
+    <div style={{backgroundColor:BLACK,minHeight:"100vh",color:"#FFF"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid #1E1E1E",backgroundColor:"#0D0D0D"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"10px"}}><Logo size={36}/>
+          <div><div style={{fontSize:"16px",fontWeight:"900"}}>Inventory Admin</div><div style={{fontSize:"11px",color:MUTED}}>Element of the Day</div></div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+          {saveMsg&&<span style={{fontSize:"12px",color:LIME,fontWeight:"700"}}>{saveMsg}</span>}
+          <button onClick={()=>{setPage("shop");setUnlocked(false);setPin("");}} style={{backgroundColor:"transparent",border:"1px solid #333",color:"#CCC",padding:"7px 14px",borderRadius:"6px",fontSize:"12px",cursor:"pointer"}}>← Exit</button>
+        </div>
+      </div>
+      <div style={{padding:"20px 24px",maxWidth:"600px",margin:"0 auto"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"10px",marginBottom:"20px"}}>
+          {[{n:inventory.length,l:"Total"},{n:groups.length,l:"Elements"},{n:inventory.filter(i=>i.version==="Regular").length,l:"Regular"},{n:inventory.filter(i=>i.version==="Exclusive").length,l:"Exclusive"}].map(s=>(
+            <div key={s.l} style={{backgroundColor:CARD,borderRadius:"8px",padding:"14px",border:"1px solid #1E1E1E",textAlign:"center"}}>
+              <div style={{fontSize:"24px",fontWeight:"900",color:LIME,lineHeight:"1"}}>{s.n}</div>
+              <div style={{fontSize:"10px",color:MUTED,marginTop:"4px"}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"flex",gap:"4px",marginBottom:"20px",backgroundColor:"#111",padding:"4px",borderRadius:"10px",width:"fit-content"}}>
+          {["inventory","add"].map(t=>(
+            <button key={t} onClick={()=>setTab(t)} style={{padding:"8px 20px",borderRadius:"8px",fontSize:"12px",fontWeight:"700",cursor:"pointer",border:"none",backgroundColor:tab===t?LIME:"transparent",color:tab===t?BLACK:"#777"}}>
+              {t==="inventory"?"Current Inventory":"Add New Item"}
+            </button>
+          ))}
+        </div>
+        {tab==="inventory"&&(
+          <div>
+            {groups.map(([element,items])=>(
+              <div key={element} style={{backgroundColor:"#111",borderRadius:"10px",border:"1px solid #1E1E1E",marginBottom:"12px",overflow:"hidden"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",backgroundColor:"#161616",borderBottom:"1px solid #1E1E1E"}}>
+                  <span style={{fontSize:"14px",fontWeight:"800"}}>{element}</span>
+                  <span style={{fontSize:"11px",color:MUTED}}>{items.length} unit{items.length!==1?"s":""}</span>
+                </div>
+                {items.map(item=>(
+                  <div key={item.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 16px",borderBottom:"1px solid #1A1A1A"}}>
+                    <div style={{display:"flex",gap:"8px",alignItems:"center",fontSize:"12px",color:"#CCC",flexWrap:"wrap"}}>
+                      <span style={{color:MUTED,fontSize:"10px"}}>#{item.id}</span>
+                      <span style={{fontSize:"10px",padding:"2px 7px",borderRadius:"4px",fontWeight:"600",backgroundColor:item.version==="Exclusive"?LIME:"#1E1E1E",color:item.version==="Exclusive"?BLACK:"#CCC"}}>{item.version}</span>
+                      <span style={{fontSize:"10px",padding:"2px 7px",borderRadius:"4px",fontWeight:"600",backgroundColor:"#1E1E1E",color:"#CCC"}}>{item.color}</span>
+                      <span style={{fontWeight:"700"}}>Sz {item.size}</span>
+                    </div>
+                    <button onClick={()=>removeItem(item.id)} style={{backgroundColor:"transparent",border:"1px solid #3A1A1A",color:"#FF6B6B",padding:"4px 10px",borderRadius:"6px",fontSize:"10px",fontWeight:"700",cursor:"pointer",flexShrink:0}}>Remove</button>
+                  </div>
+                ))}
+              </div>
+            ))}
+            {groups.length===0&&<div style={{textAlign:"center",color:MUTED,padding:"40px"}}>No inventory. Use Add New Item to add shirts.</div>}
+          </div>
+        )}
+        {tab==="add"&&(
+          <div style={{backgroundColor:"#111",borderRadius:"12px",border:"1px solid #1E1E1E",padding:"20px"}}>
+            <div style={{fontSize:"16px",fontWeight:"800",color:"#FFF",marginBottom:"16px"}}>Add New Shirt</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"12px",marginBottom:"14px"}}>
+              {[{l:"Element",k:"element",opts:EMETA.map(m=>({v:m.element,l:`${m.element} (${m.symbol})`})),placeholder:"Select Element"},
+                {l:"Version",k:"version",opts:[{v:"Regular",l:"Regular"},{v:"Exclusive",l:"Exclusive"}]},
+                {l:"Size",k:"size",opts:SZ.map(s=>({v:s,l:s}))},
+                {l:"Color",k:"color",opts:["Black","Gray","White"].map(c=>({v:c,l:c}))}
+              ].map(({l,k,opts,placeholder})=>(
+                <div key={k} style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+                  <label style={{fontSize:"10px",fontWeight:"700",color:MUTED,letterSpacing:"0.1em",textTransform:"uppercase"}}>{l}</label>
+                  <select style={sel} value={newItem[k]} onChange={e=>setNewItem(p=>({...p,[k]:e.target.value}))}>
+                    {placeholder&&<option value="">{placeholder}</option>}
+                    {opts.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+              <button onClick={addItem} disabled={!newItem.element} style={{backgroundColor:newItem.element?LIME:"#333",color:newItem.element?BLACK:"#666",border:"none",padding:"11px 22px",borderRadius:"8px",fontSize:"13px",fontWeight:"800",cursor:newItem.element?"pointer":"default"}}>+ Add to Inventory</button>
+              {saveMsg&&<span style={{fontSize:"12px",color:LIME,fontWeight:"700"}}>{saveMsg}</span>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const[page,setPage]=useState("home");
+  const[cart,setCart]=useState([]);
+  const[inventory,setInventory]=useState(()=>{
+    try{const s=localStorage.getItem("eotd-inventory");return s?JSON.parse(s):INV_DEFAULT;}catch(e){return INV_DEFAULT;}
+  });
+  const showNav=page!=="admin";
+  return(
+    <div>
+      {showNav&&<Nav setPage={setPage} cart={cart}/>}
+      {page==="home"&&<HomePage setPage={setPage} inventory={inventory}/>}
+      {page==="shop"&&<ShopPage setPage={setPage} inventory={inventory} cart={cart} setCart={setCart}/>}
+      {page==="checkout"&&<CheckoutPage setPage={setPage} cart={cart} setCart={setCart}/>}
+      {page==="admin"&&<AdminPage setPage={setPage} inventory={inventory} setInventory={setInventory}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
