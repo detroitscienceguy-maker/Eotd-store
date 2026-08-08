@@ -148,7 +148,7 @@ function HomePage({setPage,inventory}){
   useEffect(()=>{const t=setInterval(()=>setCur(p=>(p+1)%HERO_ELS.length),2500);return()=>clearInterval(t);},[]);
   const feat=HERO_ELS[cur];
   const preview=useMemo(()=>{const m={};inventory.slice(0,6).forEach(i=>{const k=`${i.element}__${i.version}`;if(!m[k])m[k]=i;});return Object.values(m).slice(0,6);},[inventory]);
-  const btn=(bg,col,cb)=><button onClick={cb} style={{backgroundColor:bg,color:col,border:bg==="transparent"?"1px solid #444":"none",padding:"13px 24px",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer"}}>;
+
 
   return(
     <div style={{backgroundColor:BLACK,minHeight:"100vh",color:"#FFF"}}>
