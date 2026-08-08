@@ -176,6 +176,32 @@ function HomePage({setPage,inventory}){
 
         <div style={{height:"1px",backgroundColor:"#1E1E1E",margin:"48px 0 40px"}}/>
 
+        {/* SHIRT SHOWCASE */}
+        <div style={{marginBottom:"48px"}}>
+          <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"0.2em",textTransform:"uppercase",color:LIME,marginBottom:"8px"}}>The Product</div>
+          <h2 style={{fontSize:"28px",fontWeight:"800",color:"#FFF",marginBottom:"6px"}}>See How It Looks</h2>
+          <p style={{fontSize:"13px",color:MUTED,marginBottom:"24px"}}>Front chest logo + full element card on the back. Available in Black and White.</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"14px"}}>
+            {[
+              {img:"https://i.imgur.com/G7bkbjH.png",label:"White Tee",desc:"Clean white with EOTD chest logo"},
+              {img:"https://i.imgur.com/Dmplo0S.png",label:"Black Tee",desc:"Bold black with EOTD chest logo"},
+            ].map(shirt=>(
+              <div key={shirt.label} style={{backgroundColor:CARD,borderRadius:"14px",overflow:"hidden",border:"1px solid #222",cursor:"pointer"}} onClick={()=>setPage("shop")}>
+                <div style={{backgroundColor:"#1A1A1A",overflow:"hidden",borderBottom:"1px solid #222"}}>
+                  <img src={shirt.img} alt={shirt.label} style={{width:"100%",height:"auto",display:"block",objectFit:"cover"}}/>
+                </div>
+                <div style={{padding:"12px 14px"}}>
+                  <div style={{fontSize:"14px",fontWeight:"800",color:"#FFF",marginBottom:"2px"}}>{shirt.label}</div>
+                  <div style={{fontSize:"11px",color:MUTED,marginBottom:"8px"}}>{shirt.desc}</div>
+                  <button onClick={()=>setPage("shop")} style={{backgroundColor:LIME,color:BLACK,border:"none",padding:"7px 14px",borderRadius:"6px",fontSize:"11px",fontWeight:"700",cursor:"pointer"}}>Shop Now →</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{height:"1px",backgroundColor:"#1E1E1E",margin:"0 0 40px"}}/>
+
         <div style={{fontSize:"11px",fontWeight:"700",letterSpacing:"0.2em",textTransform:"uppercase",color:LIME,marginBottom:"8px"}}>The Collection</div>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"24px"}}>
           <h2 style={{fontSize:"28px",fontWeight:"800",color:"#FFF"}}>Featured Elements</h2>
